@@ -10,6 +10,13 @@ namespace Pano.Net.Model
     /// </summary>
     public static class GeometryHelper
     {
+        /// <summary>
+        /// Get (x,y,z) coordinates for given angles and radius
+        /// </summary>
+        /// <param name="theta">Theta angle</param>
+        /// <param name="phi">Phi angle</param>
+        /// <param name="radius">Radius</param>
+        /// <returns>Coordinates</returns>
         public static Point3D GetPosition(double theta, double phi, double radius)
         {
             double x = radius * Math.Sin(theta) * Math.Sin(phi);
@@ -19,22 +26,46 @@ namespace Pano.Net.Model
             return new Point3D(x, y, z);
         }
 
+        /// <summary>
+        /// Get normal vector for given angles
+        /// </summary>
+        /// <param name="theta">Theta angle</param>
+        /// <param name="phi">Phi angle</param>
+        /// <returns></returns>
         public static Vector3D GetNormal(double theta, double phi)
         {
             return (Vector3D)GetPosition(theta, phi, 1.0);
         }
 
+        /// <summary>
+        /// Convert degrees to radians
+        /// </summary>
+        /// <param name="degrees">Value in degrees</param>
+        /// <returns>Value in radians</returns>
         public static double Deg2Rad(double degrees)
         {
             return (degrees / 180.0) * Math.PI;
         }
 
+        /// <summary>
+        /// Get texture coordinates for given angles
+        /// </summary>
+        /// <param name="theta">Theta angle</param>
+        /// <param name="phi">Phi angle</param>
+        /// <returns></returns>
         public static Point GetTextureCoordinate(double theta, double phi)
         {
             Point p = new Point(theta / (2 * Math.PI), phi / (Math.PI));
             return p;
         }
 
+        /// <summary>
+        /// Create a tessellated sphere mesh
+        /// </summary>
+        /// <param name="tDiv">Theta divisions</param>
+        /// <param name="pDiv">Phi divisions</param>
+        /// <param name="radius">Radius</param>
+        /// <returns>Sphere mesh</returns>
         public static MeshGeometry3D CreateSphereMesh(int tDiv, int pDiv, double radius)
         {
             double dt = Deg2Rad(360.0) / tDiv;
@@ -42,6 +73,7 @@ namespace Pano.Net.Model
 
             MeshGeometry3D mesh = new MeshGeometry3D();
 
+            // Calculate points with normals and texture coordinates
             for (int pi = 0; pi <= pDiv; pi++)
             {
                 double phi = pi * dp;
@@ -56,6 +88,7 @@ namespace Pano.Net.Model
                 }
             }
 
+            // Calculate triangles
             for (int pi = 0; pi < pDiv; pi++)
             {
                 for (int ti = 0; ti < tDiv; ti++)

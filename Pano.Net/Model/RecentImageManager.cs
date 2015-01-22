@@ -10,8 +10,14 @@ namespace Pano.Net.Model
     {
         private const int MAXIMAGES = 10;
 
+        /// <summary>
+        /// List of recent images
+        /// </summary>
         public ObservableCollection<string> RecentImages { get; private set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public RecentImageManager()
         {
             RecentImages = new ObservableCollection<string>();
@@ -25,10 +31,17 @@ namespace Pano.Net.Model
             }
         }
 
+        /// <summary>
+        /// Add image to the list and save list
+        /// </summary>
+        /// <param name="path">Path of the image to be added</param>
         public void AddAndSave(string path)
         {
+            // Remove to avoid duplicates
             if (RecentImages.Contains(path)) RecentImages.Remove(path);
+            // Remove if the list is full
             while (RecentImages.Count >= MAXIMAGES) RecentImages.RemoveAt(RecentImages.Count - 1);
+            // Add to list and save
             RecentImages.Insert(0, path);
             Properties.Settings.Default.RecentImages.Clear();
             foreach (string s in RecentImages) Properties.Settings.Default.RecentImages.Add(s);

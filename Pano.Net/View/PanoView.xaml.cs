@@ -17,51 +17,75 @@ namespace Pano.Net.View
     /// </summary>
     public partial class PanoView : UserControl, INotifyPropertyChanged
     {
-        private MeshGeometry3D sphereMesh = null;
-        private ImageBrush brush = null;
-        private double camTheta = 180;
-        private double camPhi = 90;
-        private double camThetaSpeed = 0;
-        private double camPhiSpeed = 0;
-        private double clickX, clickY;
-        private DispatcherTimer timer;
-        private bool isMouseDown = false;
+        private MeshGeometry3D sphereMesh = null; // Tessellated sphere mesh
+        private ImageBrush brush = null;          // Brush containing the panorama
+        private double camTheta = 180;            // Camera horizontal orientation
+        private double camPhi = 90;               // Camera vertical orientation
+        private double camThetaSpeed = 0;         // Camera horizontal movement speed
+        private double camPhiSpeed = 0;           // Camera vertical movement speed
+        private double clickX, clickY;            // Coordinates of the mouse press
+        private DispatcherTimer timer;            // Timer for animating camera
+        private bool isMouseDown = false;         // Is the mouse pressed
 
-
+        /// <summary>
+        /// Camera horizontal FOV
+        /// </summary>
         public double Hfov { get { return MyCam.FieldOfView; } }
+
+        /// <summary>
+        /// Camera vertical FOV
+        /// </summary>
         public double Vfov { get { return MyCam.FieldOfView * ActualHeight / ActualWidth; } }
+
+        /// <summary>
+        /// Camera horizontal orientation
+        /// </summary>
         public double Theta { get { return camTheta; } }
+
+        /// <summary>
+        /// Camera vertical orientation
+        /// </summary>
         public double Phi { get { return camPhi; } }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public PanoView()
         {
             InitializeComponent();
-            sphereMesh = GeometryHelper.CreateSphereMesh(40, 20, 10);
-            
-
-            brush = new ImageBrush();
+            sphereMesh = GeometryHelper.CreateSphereMesh(40, 20, 10); // Initialize mesh 
+           
+            brush = new ImageBrush(); // Initialize brush with no image
             brush.TileMode = TileMode.Tile;
             
-            timer = new DispatcherTimer();
+            timer = new DispatcherTimer(); // Initialize timer
             timer.Interval = TimeSpan.FromMilliseconds(25);
             timer.Tick += timer_Tick;
         }
 
+        /// <summary>
+        /// Dependency property for the panorama
+        /// </summary>
         public static readonly DependencyProperty ImageProperty =
             DependencyProperty.Register("Image", typeof(BitmapImage), typeof(PanoView),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, ImageChangedCallback));
 
+        // Callback for image changed
         private static void ImageChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((PanoView)d).ImageChanged();
         }
 
+        /// <summary>
+        /// Panorama
+        /// </summary>
         public BitmapImage Image
         {
             get { return (BitmapImage)GetValue(ImageProperty); }
             set { SetValue(ImageProperty, value); }
         }
 
+        // Image changed
         private void ImageChanged()
         {
             MyModel.Children.Clear();
@@ -75,7 +99,8 @@ namespace Pano.Net.View
             RaisePropertyChanged("Vfov");
         }
 
-        void timer_Tick(object sender, EventArgs e)
+        // Timer: animate camera
+        private void timer_Tick(object sender, EventArgs e)
         {
             if (!isMouseDown) return;
             camTheta += camThetaSpeed / 50;
@@ -95,6 +120,7 @@ namespace Pano.Net.View
             RaisePropertyChanged("Phi");
         }
 
+        // Mouse move: set camera movement speed
         private void vp_MouseMove(object sender, MouseEventArgs e)
         {
             if (!isMouseDown) return;
@@ -102,6 +128,7 @@ namespace Pano.Net.View
             camPhiSpeed = Mouse.GetPosition(vp).Y - clickY;
         }
 
+        // Mouse down: start moving camera
         private void vp_MouseDown(object sender, MouseButtonEventArgs e)
         {
             isMouseDown = true;
@@ -112,6 +139,7 @@ namespace Pano.Net.View
             timer.Start();
         }
 
+        // Mouse up: stop moving camera
         private void vp_MouseUp(object sender, MouseButtonEventArgs e)
         {
             isMouseDown = false;
@@ -119,6 +147,7 @@ namespace Pano.Net.View
             timer.Stop();
         }
 
+        // Mouse wheel: zoom
         private void vp_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             MyCam.FieldOfView -= e.Delta / 100;
@@ -129,6 +158,7 @@ namespace Pano.Net.View
             RaisePropertyChanged("Vfov");
         }
 
+        // Size changed: notify FOV change
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
@@ -137,11 +167,15 @@ namespace Pano.Net.View
             RaisePropertyChanged("Vfov");
         }
 
+        // Helper function for INPC
         private void RaisePropertyChanged(string propertyName)
         {
             if (PropertyChanged != null) PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        /// <summary>
+        /// Property changed event
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }
