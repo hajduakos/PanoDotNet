@@ -114,18 +114,34 @@ namespace Pano.Net.ViewModel
 
             await Task.Factory.StartNew(() =>
             {
-                Image = new BitmapImage();
-                Image.BeginInit();
-                Image.CacheOption = BitmapCacheOption.OnLoad;
-                Image.UriSource = new Uri(path);
-                Image.EndInit();
-                Image.Freeze();
+                try
+                {
+                    Image = new BitmapImage();
+                    Image.BeginInit();
+                    Image.CacheOption = BitmapCacheOption.OnLoad;
+                    Image.UriSource = new Uri(path);
+                    Image.EndInit();
+                    Image.Freeze();
+                }
+                catch (System.IO.DirectoryNotFoundException)
+                {
+                    ErrorMessage("Error", "Image not found.");
+                    Image = null;
+                }
+                catch (Exception ex)
+                {
+                    ErrorMessage("Error", "Unknown error while loading image: " + ex.GetType().ToString() + ". Please report.");
+                    Image = null;
+                }
             });
 
-            if (Math.Abs(Image.Width / Image.Height - 2) > 0.001)
-                WarningMessage("Warning", "The opened image is not equirectangular (2:1)! Rendering may be improper.");
+            if (Image != null)
+            {
+                if (Math.Abs(Image.Width / Image.Height - 2) > 0.001)
+                    WarningMessage("Warning", "The opened image is not equirectangular (2:1)! Rendering may be improper.");
 
-            RecentImageManager.AddAndSave(path);
+                RecentImageManager.AddAndSave(path);
+            }
 
             IsLoading = false; RaisePropertyChanged("IsLoading");
             RaisePropertyChanged("Image");
@@ -166,6 +182,12 @@ namespace Pano.Net.ViewModel
         private void WarningMessage(string caption, string text)
         {
             MessageBox.Show(text, caption, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+
+        // Helper function to display an error
+        private void ErrorMessage(string caption, string text)
+        {
+            MessageBox.Show(text, caption, MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         #endregion
