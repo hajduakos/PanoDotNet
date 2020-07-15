@@ -35,7 +35,7 @@ namespace Pano.Net.View
         /// <summary>
         /// Camera vertical FOV
         /// </summary>
-        public double Vfov { get { return MyCam.FieldOfView * ActualHeight / ActualWidth; } }
+        public double Vfov { get { return 2 * Math.Atan(ActualHeight / ActualWidth * Math.Tan(MyCam.FieldOfView * Math.PI / 180 / 2)) * 180 / Math.PI; } }
 
         /// <summary>
         /// Camera horizontal orientation
