@@ -1,6 +1,6 @@
 # Pano.Net
 
-[Main window](Samples/sample.gif)
+![Main window](Samples/sample.gif)
 
 Interactive viewer for 360x180 degree equirectangular panoramas.
 
